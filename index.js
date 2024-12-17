@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require("cors");
 require('dotenv').config()
 const app = express();
@@ -25,6 +25,32 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const jobCollection=client.db('solo-db').collection('solo')
+
+
+    app.post('/add-job', async (req,res)=>{
+      const jobData=req.body;
+      const result=await jobCollection.insertOne(jobData)
+      res.send(result)
+    })
+    app.get('/jobs', async (req,res)=>{
+      const result=await jobCollection.find().toArray()
+      res.send(result)
+    })
+    app.get('/jobs/:email', async (req,res)=>{ 
+      const email=req.params.email;
+      const query={'buyer.email':email}
+      const result=await jobCollection.find(query).toArray()
+      res.send(result)
+    })
+
+    app.delete('/job/:id', async (req,res)=>{
+      const id=req.params.id;
+      const query={_id: new ObjectId(id)}
+      const result=await jobCollection.deleteOne(query)
+      res.send(result)
+    }) 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -32,7 +58,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
