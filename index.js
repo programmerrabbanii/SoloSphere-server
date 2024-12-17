@@ -65,6 +65,20 @@ async function run() {
       const result=await jobCollection.findOne(query)
       res.send(result)
     }) 
+
+    app.put('/add-update/:id', async (req,res)=>{
+      const id=req.params.id;
+      const jobData=req.body;
+      const update={
+        $set: jobData
+      }
+
+      const query={_id: new ObjectId(id)}
+      const options={upsert:true}
+      const result=await jobCollection.updateOne(query,update,options)
+      res.send(result)
+
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
